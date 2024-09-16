@@ -2,10 +2,23 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import useWebSocket from 'react-use-websocket';
+
+const WS_URL = 'ws:192.168.0.50:5000/ws'
 
 export default function Home() {
   // State to keep track of the click count
   const [clickCount, setClickCount] = useState(0);
+
+  const { sendMessage } = useWebSocket(WS_URL, {
+    onOpen: () => {
+      console.log('WebSocket connection established.');
+    },
+    onMessage: (event) => {
+      console.log('Recieved Message: ', event.data);
+      setClickCount(event.data);
+    }
+  });
 
   const GetClickCount = async () => {
     // Update the state
@@ -22,16 +35,24 @@ export default function Home() {
   };
 
   GetClickCount();
+  
 
-  // Function to handle the button click
+  // Function to handle the button click, can fetch or send message
   const handleClick = async () => {
     fetch('http://192.168.0.50/update', {
       method: 'POST'
     })
     .then(response => response.json())
-    .then(data => {
-      setClickCount(data["count"]);
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  };
+
+  const handleResetClick = async () => {
+    fetch('http://192.168.0.50/reset', {
+      method: 'POST'
     })
+    .then(response => response.json())
     .catch(error => {
       console.error('Error:', error);
     });
@@ -54,6 +75,16 @@ export default function Home() {
           >
 
             Click Me
+          </a>
+          <a
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault(); // Prevents default action of the <a> tag
+              handleResetClick();
+            }}
+          >
+            Reset
           </a>
         </div>
       </main>
