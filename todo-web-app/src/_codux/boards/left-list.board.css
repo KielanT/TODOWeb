@@ -1,0 +1,15 @@
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.leftList {
+  background-color: #53565a;
+  width: 400px;
+}
+
+.centerList {
+  background-color:#ff0000;
+  flex: 1 1 0px;
+  display: flex;
+}

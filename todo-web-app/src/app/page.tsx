@@ -1,93 +1,79 @@
-'use client';
+"use client"; 
 
-import Image from "next/image";
-import { useState } from "react";
-import useWebSocket from 'react-use-websocket';
+import Image from 'next/image';
+import React, { useState } from 'react';
+import Modal from "./components/modals"
+import Logo  from "../../../../Resources/ICON.png"
 
-const WS_URL = 'ws:192.168.0.50:5000/ws'
 
 export default function Home() {
-  // State to keep track of the click count
-  const [clickCount, setClickCount] = useState(0);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [lists, setLists] = useState<string[]>([])
 
-  const { sendMessage } = useWebSocket(WS_URL, {
-    onOpen: () => {
-      console.log('WebSocket connection established.');
-    },
-    onMessage: (event) => {
-      console.log('Recieved Message: ', event.data);
-      setClickCount(event.data);
+  const toggleModal = (type = '') =>{
+    setModalType(type);
+    setModalOpen(!isModalOpen);
+  };
+
+  const createList = (name: string) =>{
+    if(name.length > 0)
+    {
+      setLists([...lists, name]);
+      toggleModal();
     }
-  });
+    else{
+      alert('Please enter a name before adding.'); 
+    }
+  }
 
-  const GetClickCount = async () => {
-    // Update the state
-    fetch('http://192.168.0.50/count', {
-      method: 'GET'
-    })
-    .then(response => response.json())
-    .then(data => {
-      setClickCount(data["count"]);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  };
-
-  GetClickCount();
+  const createTask = (name: string) =>{
+    if(name.length > 0)
+    {
+      console.log(name);
+      toggleModal();
+    }
+    else{
+      alert('Please enter a name before adding.'); 
+    }
+  }
   
-
-  // Function to handle the button click, can fetch or send message
-  const handleClick = async () => {
-    fetch('http://192.168.0.50/update', {
-      method: 'POST'
-    })
-    .then(response => response.json())
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  };
-
-  const handleResetClick = async () => {
-    fetch('http://192.168.0.50/reset', {
-      method: 'POST'
-    })
-    .then(response => response.json())
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  };
-
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <div className="flex gap-4 items-center justify-center flex-col sm:flex-row">
-          <p>Clicked {clickCount} times</p>
+  return (  
+    <main>
+      <div className='titleBar'>
+      <Image src={Logo} alt="App Logo" width={50} height={50} />
+        <h1 className='titleText'>TODO List Web App</h1>
+      </div>
+      <div className="app">
+        <div className="leftList">
+          <div className="ButtonBar">
+            <button className="AddButton" onClick={() => toggleModal('list')}>Add List</button>
+          </div>
+          <div className='ListButtonContainer'>
+          {lists.map((list, index) => (
+              <button key={index} className="ListButton">
+                {list}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="#"
-            onClick={(e) => {
-              e.preventDefault(); // Prevents default action of the <a> tag
-              handleClick();
-            }}
-          >
 
-            Click Me
-          </a>
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="#"
-            onClick={(e) => {
-              e.preventDefault(); // Prevents default action of the <a> tag
-              handleResetClick();
-            }}
-          >
-            Reset
-          </a>
+        <div className="divider"></div>
+
+        <div className="centerList">
+          <div className="ButtonBar">
+            <button className="AddButton" onClick={() => toggleModal('task')}>Add Task</button>
+          </div>
+          <div className='ListButtonContainer'>
+          {lists.map((list, index) => (
+              <button key={index} className="ListButton">
+                {list}
+              </button>
+            ))}
+          </div>
         </div>
-      </main>
-    </div>
+        {isModalOpen && <Modal closeModal={toggleModal} nameModal={modalType === 'list' ? createList : createTask} title={modalType === 'list' ? 'Create List' : 'Create Task'} />}
+      </div>
+    </main>
   );
 }
