@@ -6,11 +6,14 @@ export default createBoard({
   name: "app",
   Board: () => (
     <div className="AppBoard_div1">
+      <div className="AppBoard_div2" />
       <div className="app">
+        <div className="AppBoard_div1" />
         <div className="leftList">
           <div className="ButtonBar">
             <button className="AppBoard_button2">Button</button>
           </div>
+          <textarea />
         </div>
         <div className="centerList">
           <div className="ButtonBar">

@@ -12,6 +12,7 @@
   background-color: #0f0f0f;
   flex: 1 1 0px;
   display: flex;
+  box-shadow: 3px 3px 2px black;
 }
 
 .ButtonBar {
@@ -24,4 +25,11 @@
 }
 .AppBoard_button2 {
   margin: 10px;
+}
+.AppBoard_div1 {
+}
+.AppBoard_div2 {
+  z-index: 1000;
+  height: 100px;
+  background-color: #d23d3d;
 }
