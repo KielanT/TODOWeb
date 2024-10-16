@@ -6,7 +6,6 @@ import Modal from "./components/modals"
 import TaskModal from "./components/taskModal"
 import Logo  from "../../../../Resources/ICON.png"
 import { Task, List }  from "./types/interfaces"
-import { newDate } from 'react-datepicker/dist/date_utils';
 
 
 export default function Home() {
@@ -50,7 +49,8 @@ export default function Home() {
       const newTask: Task = {
         name,
         taskDesc: "",
-        dueDate: new Date()
+        dueDate: new Date(),
+        complete: false
       };
 
       [...lists][selectedListId].tasks.push(newTask);
@@ -75,6 +75,22 @@ export default function Home() {
   const handleTaskDueDateChange = (newDate: Date) => {
     if(selectedListId !== null && selectedTaskId !== null){
       lists[selectedListId].tasks[selectedTaskId].dueDate = newDate;
+    }
+  }
+
+  const toggleTaskComplete = (index: number) => {
+    if(selectedListId !== null){
+      const newLists = [...lists];
+      const newTasks = [...newLists[selectedListId].tasks];
+
+      newTasks[index] = {
+        ...newTasks[index], 
+        complete: !newTasks[index].complete
+      };
+
+      newLists[selectedListId].tasks = newTasks;
+
+      setLists(newLists); 
     }
   }
   
@@ -106,9 +122,12 @@ export default function Home() {
           </div>
           <div className='ListButtonContainer'>
           {selectedListId !== null && lists[selectedListId].tasks.map((task, index) => (
-            <button key={index} className="ListButton" onClick={() => {setSelectedTaskId(index); }} style={{backgroundColor: selectedTaskId === index ? '#151515' : '#0f0f0f'}}>
-            {task.name}
-          </button>
+            <div key={index} className="TaskItem">
+              <input type="checkbox" className="TaskCheckbox" checked={task.complete} onChange={() => {toggleTaskComplete(index)}}/>
+              <button key={index} className="ListButton" onClick={() => {setSelectedTaskId(index); }} style={{backgroundColor: selectedTaskId === index ? '#151515' : '#0f0f0f'}}>
+                {task.name}
+              </button>
+          </div>
           ))}
           </div>
           {selectedTaskId !== null && selectedListId !== null && (<TaskModal closeModal={() => setSelectedTaskId(null)} task={lists[selectedListId].tasks[selectedTaskId]} OnTaskDescUpdate={handleInputChange} OnTaskDateUpdate={handleTaskDueDateChange}/>)}
