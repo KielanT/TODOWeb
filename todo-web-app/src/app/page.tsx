@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 import Modal from "./components/modals"
 import TaskModal from "./components/taskModal"
+import ContextMenu from "./components/ContextMenu"
 import Logo  from "../../../../Resources/ICON.png"
 import { Task, List }  from "./types/interfaces"
 
@@ -14,6 +15,17 @@ export default function Home() {
   const [lists, setLists] = useState<List[]>([])
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const [listContextMenu, setListContextMenu] = useState<{ x: number; y: number; visible: boolean }>({
+    x: 0,
+    y: 0,
+    visible: false,
+  });
+  const [taskContextMenu, setTaskContextMenu] = useState<{ x: number; y: number; visible: boolean }>({
+    x: 0,
+    y: 0,
+    visible: false,
+  });
+
 
   const toggleModal = (type = '') =>{
     setModalType(type);
@@ -94,6 +106,58 @@ export default function Home() {
     }
   }
   
+const handleListContextMenu = (event: React.MouseEvent, index: number) => {
+  event.preventDefault();
+  setSelectedListId(index);
+  setListContextMenu({x: event.pageX, y: event.pageY, visible: true});
+};
+
+const deleteList = () => {
+  setSelectedTaskId(null);
+  if(selectedListId !== null) {
+    const updatedLists = lists.filter((_, i) => i !== selectedListId)
+    setLists(updatedLists);
+    setSelectedListId(null);
+  }
+  closeListContextMenu();
+};
+
+const closeListContextMenu = () =>
+{
+  setListContextMenu({...listContextMenu, visible: false});
+}
+
+const handleTaskContextMenu =  (event: React.MouseEvent, index: number) => {
+  event.preventDefault();
+  setSelectedTaskId(index);
+  setTaskContextMenu({x: event.pageX, y: event.pageY, visible: true});
+};
+
+const deleteTask = () => {
+  if (selectedTaskId !== null && selectedListId !== null) {
+    const updatedTasks = lists[selectedListId].tasks.filter((_, i) => i !== selectedTaskId);
+
+    const updatedList = {
+      ...lists[selectedListId],
+      tasks: updatedTasks,
+    };
+
+    const updatedLists = lists.map((list, index) =>
+      index === selectedListId ? updatedList : list
+    );
+
+    setLists(updatedLists);
+    setSelectedTaskId(null); 
+  }
+
+  closeTaskContextMenu(); 
+};
+
+const closeTaskContextMenu = () =>
+{
+  setTaskContextMenu({...taskContextMenu, visible: false});
+}
+
   return (  
     <main>
       <div className='titleBar'>
@@ -107,7 +171,7 @@ export default function Home() {
           </div>
           <div className='ListButtonContainer'>
           {lists.map((list, index) => (
-              <button key={index} className="ListButton" onClick={() => {setSelectedListId(index); setSelectedTaskId(null);}} style={{backgroundColor: selectedListId === index ? '#151515' : '#0f0f0f'}} >
+              <button key={index} className="ListButton" onClick={() => {setSelectedListId(index); setSelectedTaskId(null);}} onContextMenu={(e) => handleListContextMenu(e, index)} style={{backgroundColor: selectedListId === index ? '#151515' : '#0f0f0f'}} >
                 {list.name}
               </button>
             ))}
@@ -124,7 +188,7 @@ export default function Home() {
           {selectedListId !== null && lists[selectedListId].tasks.map((task, index) => (
             <div key={index} className="TaskItem">
               <input type="checkbox" className="TaskCheckbox" checked={task.complete} onChange={() => {toggleTaskComplete(index)}}/>
-              <button key={index} className="ListButton" onClick={() => {setSelectedTaskId(index); }} style={{backgroundColor: selectedTaskId === index ? '#151515' : '#0f0f0f'}}>
+              <button key={index} className="ListButton" onClick={() => {setSelectedTaskId(index); }} onContextMenu={(e) => handleTaskContextMenu(e, index)} style={{backgroundColor: selectedTaskId === index ? '#151515' : '#0f0f0f'}}>
                 {task.name}
               </button>
           </div>
@@ -132,6 +196,8 @@ export default function Home() {
           </div>
           {selectedTaskId !== null && selectedListId !== null && (<TaskModal closeModal={() => setSelectedTaskId(null)} task={lists[selectedListId].tasks[selectedTaskId]} OnTaskDescUpdate={handleInputChange} OnTaskDateUpdate={handleTaskDueDateChange}/>)}
         </div>
+        {listContextMenu.visible && <ContextMenu position={{x: listContextMenu.x, y: listContextMenu.y}} OnDelete={deleteList} CloseMenu={closeListContextMenu}/>}
+        {taskContextMenu.visible && <ContextMenu position={{x: taskContextMenu.x, y: taskContextMenu.y}} OnDelete={deleteTask} CloseMenu={closeTaskContextMenu}/>}
         {isModalOpen && <Modal closeModal={toggleModal} nameModal={modalType === 'list' ? createList : createTask} title={modalType === 'list' ? 'Create List' : 'Create Task'} />}
       </div>
     </main>
