@@ -1,13 +1,16 @@
 "use client"; 
 
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Modal from "./components/modals"
 import TaskModal from "./components/taskModal"
 import ContextMenu from "./components/ContextMenu"
 import Logo  from "../../../../Resources/ICON.png"
 import { Task, List }  from "./types/interfaces"
 
+const id = '114607425420314526011'; // TODO REMOVE
+const email = 'kielantodd3@gmail.com';
+const url = 'http://192.168.0.50/getLists';
 
 export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -26,6 +29,63 @@ export default function Home() {
     visible: false,
   });
 
+  const hasFetched = useRef(false); 
+
+  const getLists = async () => {
+    const jsonPayload = { email, id, };
+
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(jsonPayload),
+    })
+    .then(response => response.json())
+    .then(data => {
+
+      const listTitles = Object.keys(data.list);
+
+      listTitles.forEach(title =>{
+
+        const newList: List = {
+          name: title,
+          tasks: [],
+        }
+
+        const tasks = data.list[title].tasks;
+        if(tasks.length > 0){
+          tasks.forEach((task: { taskName: any; taskDescription: any; complete: boolean; dueDate: Date}) => {
+            const newTask: Task = {
+              name: task.taskName,
+              taskDesc: task.taskDescription,
+              dueDate: task.dueDate, // TODO get date
+              complete: task.complete
+            };  
+            console.log(task.taskName);
+            newList.tasks.push(newTask);
+
+          });
+        }
+
+        setLists(prevLists => {
+          const updatedLists = [...prevLists, newList];
+          const newIndex = updatedLists.length - 1;
+          setSelectedListId(newIndex); 
+          return updatedLists;
+        });
+        setSelectedTaskId(null);
+
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  };
+
+  useEffect(() => {
+    if(!hasFetched.current){
+      getLists();
+      hasFetched.current = true;
+    }
+  }, []);
 
   const toggleModal = (type = '') =>{
     setModalType(type);
@@ -33,7 +93,7 @@ export default function Home() {
   };
 
 
-  const createList = (name: string) =>{
+  const createList = (name: string, calledFromModal: boolean) =>{
     if(name.length > 0)
     {
       const newList: List = {
@@ -48,7 +108,9 @@ export default function Home() {
         return updatedLists;
       });
       setSelectedTaskId(null);
-      toggleModal();
+      if(calledFromModal){
+        toggleModal();
+      }
     }
     else{
       alert('Please enter a name before adding.'); 
@@ -67,11 +129,11 @@ export default function Home() {
 
       [...lists][selectedListId].tasks.push(newTask);
       setLists([...lists]);
-      // todo get list at selectListId add task to list 
       toggleModal();
     }
     else if(selectedListId == null){
-      alert('Please select a list.');  // TODO set selected ID to the newest list
+      alert('Please select a list.');  
+      toggleModal();
     }
     else{
       alert('Please enter a name before adding.'); 
@@ -158,8 +220,9 @@ const closeTaskContextMenu = () =>
   setTaskContextMenu({...taskContextMenu, visible: false});
 }
 
+
   return (  
-    <main>
+      <main>
       <div className='titleBar'>
       <Image src={Logo} alt="App Logo" width={50} height={50} />
         <h1 className='titleText'>TODO List Web</h1>

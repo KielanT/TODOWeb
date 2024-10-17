@@ -4,7 +4,7 @@ import "../modal.css"
 
 interface ModalProps {
     closeModal: () => void;
-    nameModal: (name :string) =>void;
+    nameModal: (name :string, calledFromModal: boolean) =>void;
     title : string;
 }
 
@@ -40,7 +40,7 @@ export default class Modal extends React.Component<ModalProps, ModalState>
                     </div>
                     <div className="button-container">
                         <button className="close-modal" onClick={()=>{
-                            nameModal(inputName);
+                            nameModal(inputName, true);
                         }}>Add</button>
 
                         <button className="close-modal" onClick={closeModal}>Cancel</button>
