@@ -99,8 +99,7 @@ export const getListRequest = async (
     });
   }
 
-  // deleteList
-  export const deleteTaskRequest = async (url: string,  email: string, id: string, name: string) : Promise<boolean> => {
+  export const deleteListRequest = async (url: string,  email: string, id: string, name: string) : Promise<boolean> => {
     const jsonPayload = { email, id, name };
 
     return fetch(url, {
@@ -126,8 +125,56 @@ export const getListRequest = async (
   }
 
   // deleteTask
+  export const deleteTaskRequest = async (url: string,  email: string, id: string, list: string, name: string) : Promise<boolean> => {
+    const jsonPayload = { email, id, list, name };
+
+    return fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(jsonPayload),
+    })
+    .then(response => {
+        if(response.ok)
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false; 
+    });
+  }
 
   // updateTaskComplete
+  export const updateTaskComplete = async (url: string,  email: string, id: string, list: string, name: string, complete: boolean) : Promise<boolean> => {
+    const jsonPayload = { email, id, list, name, complete };
+
+    return fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(jsonPayload),
+    })
+    .then(response => {
+        if(response.ok)
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false; 
+    });
+  }
 
   // updateTaskDesc
 

@@ -7,7 +7,7 @@ import TaskModal from "./components/taskModal"
 import ContextMenu from "./components/ContextMenu"
 import Logo  from "../../../../Resources/ICON.png"
 import { Task, List }  from "./types/interfaces"
-import { getListRequest, createListRequest, createNewTaskRequest, deleteTaskRequest } from "./api/httpRequests"
+import { getListRequest, createListRequest, createNewTaskRequest, deleteListRequest, deleteTaskRequest, updateTaskComplete } from "./api/httpRequests"
 
 
 
@@ -120,8 +120,9 @@ export default function Home() {
     }
   }
 
-  const toggleTaskComplete = (index: number) => {
+  const toggleTaskComplete = async (index: number) => {
     if(selectedListId !== null){
+
       const newLists = [...lists];
       const newTasks = [...newLists[selectedListId].tasks];
 
@@ -129,6 +130,8 @@ export default function Home() {
         ...newTasks[index], 
         complete: !newTasks[index].complete
       };
+
+      const success = await updateTaskComplete(url + '/updateTaskComplete', email, id, lists[selectedListId].name, newTasks[index].name, newTasks[index].complete);
 
       newLists[selectedListId].tasks = newTasks;
 
@@ -145,7 +148,7 @@ const handleListContextMenu = (event: React.MouseEvent, index: number) => {
 const deleteList = async () => {
   setSelectedTaskId(null);
   if(selectedListId !== null) {
-    const success = await deleteTaskRequest(url + '/deleteList', email, id, lists[selectedListId].name);
+    const success = await deleteListRequest(url + '/deleteList', email, id, lists[selectedListId].name);
     if(success) {
       const updatedLists = lists.filter((_, i) => i !== selectedListId)
       setLists(updatedLists);
@@ -166,23 +169,26 @@ const handleTaskContextMenu =  (event: React.MouseEvent, index: number) => {
   setTaskContextMenu({x: event.pageX, y: event.pageY, visible: true});
 };
 
-const deleteTask = () => {
+const deleteTask = async () => {
   if (selectedTaskId !== null && selectedListId !== null) {
-    const updatedTasks = lists[selectedListId].tasks.filter((_, i) => i !== selectedTaskId);
+    
+    const success = await deleteTaskRequest(url + '/deleteTask', email, id, lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name);
 
-    const updatedList = {
-      ...lists[selectedListId],
-      tasks: updatedTasks,
-    };
+    if(success){
+      const updatedTasks = lists[selectedListId].tasks.filter((_, i) => i !== selectedTaskId);
+      const updatedList = {
+        ...lists[selectedListId],
+        tasks: updatedTasks,
+      };
 
-    const updatedLists = lists.map((list, index) =>
-      index === selectedListId ? updatedList : list
-    );
+      const updatedLists = lists.map((list, index) =>
+        index === selectedListId ? updatedList : list
+      );
 
-    setLists(updatedLists);
-    setSelectedTaskId(null); 
+      setLists(updatedLists);
+      setSelectedTaskId(null); 
+    }
   }
-
   closeTaskContextMenu(); 
 };
 
