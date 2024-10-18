@@ -7,10 +7,9 @@ import TaskModal from "./components/taskModal"
 import ContextMenu from "./components/ContextMenu"
 import Logo  from "../../../../Resources/ICON.png"
 import { Task, List }  from "./types/interfaces"
+import { getListRequest, createListRequest, createNewTaskRequest, deleteTaskRequest } from "./api/httpRequests"
 
-const id = '114607425420314526011'; // TODO REMOVE
-const email = 'kielantodd3@gmail.com';
-const url = 'http://192.168.0.50/getLists';
+
 
 export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -30,59 +29,9 @@ export default function Home() {
   });
 
   const hasFetched = useRef(false); 
-
-  const getLists = async () => {
-    const jsonPayload = { email, id, };
-
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(jsonPayload),
-    })
-    .then(response => response.json())
-    .then(data => {
-
-      const listTitles = Object.keys(data.list);
-
-      listTitles.forEach(title =>{
-
-        const newList: List = {
-          name: title,
-          tasks: [],
-        }
-
-        const tasks = data.list[title].tasks;
-        if(tasks.length > 0){
-          tasks.forEach((task: { taskName: any; taskDescription: any; complete: boolean; dueDate: Date}) => {
-            const newTask: Task = {
-              name: task.taskName,
-              taskDesc: task.taskDescription,
-              dueDate: task.dueDate, // TODO get date
-              complete: task.complete
-            };  
-            console.log(task.taskName);
-            newList.tasks.push(newTask);
-
-          });
-        }
-
-        setLists(prevLists => {
-          const updatedLists = [...prevLists, newList];
-          const newIndex = updatedLists.length - 1;
-          setSelectedListId(newIndex); 
-          return updatedLists;
-        });
-        setSelectedTaskId(null);
-
-      });
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  };
-
   useEffect(() => {
     if(!hasFetched.current){
-      getLists();
+      getListRequest( url + '/getLists', email, id, setLists, setSelectedListId, setSelectedTaskId);
       hasFetched.current = true;
     }
   }, []);
@@ -93,23 +42,32 @@ export default function Home() {
   };
 
 
-  const createList = (name: string, calledFromModal: boolean) =>{
+  const createList = async (name: string, calledFromModal: boolean) =>{
     if(name.length > 0)
     {
-      const newList: List = {
-        name,
-        tasks: [],
-      }
+      const success = await createListRequest(url + '/newList', email, id, name);
 
-      setLists(prevLists => {
-        const updatedLists = [...prevLists, newList];
-        const newIndex = updatedLists.length - 1;
-        setSelectedListId(newIndex); 
-        return updatedLists;
-      });
-      setSelectedTaskId(null);
-      if(calledFromModal){
-        toggleModal();
+      if(success){
+        const newList: List = {
+          name,
+          tasks: [],
+        }
+
+        setLists(prevLists => {
+          const updatedLists = [...prevLists, newList];
+          const newIndex = updatedLists.length - 1;
+          setSelectedListId(newIndex); 
+          return updatedLists;
+        });
+        setSelectedTaskId(null);
+        if(calledFromModal){
+          toggleModal();
+        }
+      }else{
+        alert('Failed to create list.'); // TODO check if there is a server connection 
+        if(calledFromModal){
+          toggleModal();
+        }
       }
     }
     else{
@@ -117,19 +75,29 @@ export default function Home() {
     }
   }
 
-  const createTask = (name: string) =>{
+  const createTask = async (name: string) =>{
     if(name.length > 0 && selectedListId !== null)
     {
-      const newTask: Task = {
-        name,
-        taskDesc: "",
-        dueDate: new Date(),
-        complete: false
-      };
+      const listName = lists[selectedListId].name;
+      const success = await createNewTaskRequest(url + '/newTask', email, id, listName, name);
 
-      [...lists][selectedListId].tasks.push(newTask);
-      setLists([...lists]);
-      toggleModal();
+      if(success)
+      {
+        const newTask: Task = {
+          name,
+          taskDesc: "",
+          dueDate: new Date(),
+          complete: false
+        };
+
+        [...lists][selectedListId].tasks.push(newTask);
+        setLists([...lists]);
+        toggleModal();
+      }
+      else{
+        alert('Failed to create task.');  
+        toggleModal();
+      }
     }
     else if(selectedListId == null){
       alert('Please select a list.');  
@@ -174,12 +142,15 @@ const handleListContextMenu = (event: React.MouseEvent, index: number) => {
   setListContextMenu({x: event.pageX, y: event.pageY, visible: true});
 };
 
-const deleteList = () => {
+const deleteList = async () => {
   setSelectedTaskId(null);
   if(selectedListId !== null) {
-    const updatedLists = lists.filter((_, i) => i !== selectedListId)
-    setLists(updatedLists);
-    setSelectedListId(null);
+    const success = await deleteTaskRequest(url + '/deleteList', email, id, lists[selectedListId].name);
+    if(success) {
+      const updatedLists = lists.filter((_, i) => i !== selectedListId)
+      setLists(updatedLists);
+      setSelectedListId(null);
+    }
   }
   closeListContextMenu();
 };
