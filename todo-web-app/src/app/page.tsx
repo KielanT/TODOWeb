@@ -65,7 +65,6 @@ export default function Home() {
     setModalOpen(!isModalOpen);
   };
 
-
   const createList = async (name: string, calledFromModal: boolean) =>{
     if(name.length > 0 && user)
     {

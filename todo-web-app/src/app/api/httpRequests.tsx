@@ -75,7 +75,6 @@ export const getListRequest = async (
     });
   };
 
-  // newTask
   export const createNewTaskRequest = async (url: string, email: string, id: string, list: string, name: string) : Promise<boolean> =>{
     const jsonPayload = { email, id, list, name };
 
@@ -227,7 +226,43 @@ export const getListRequest = async (
     });
   }
 
-  // doesUserExist?
+  export const doesUserExistRequest = async (url: string, id: string) : Promise<boolean> =>{
+    const requestUrl = `${url}?gID=${encodeURIComponent(id)}`;
 
-  // createUser
-  
+    return fetch(requestUrl, {
+        method: 'GET',
+    })
+    .then(response => {
+        if(response.ok) {
+            return response.json().then(data => data.exist); 
+        } else {
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false; 
+    });
+  }
+
+  export const createUserRequest = async (url: string, email: string, id: string, name: string) : Promise<boolean> =>{
+    const jsonPayload = { email, id, name };
+
+    return fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(jsonPayload),
+    })
+    .then(response => {
+        if(response.ok)
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false; 
+    });
+  }
