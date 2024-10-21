@@ -55,7 +55,7 @@ export default function Home() {
   const hasFetched = useRef(false); 
   useEffect(() => {
     if(!hasFetched.current && user !== null){
-      getListRequest( url + '/getLists', user.email, user.id, setLists, setSelectedListId, setSelectedTaskId);
+      getListRequest(user.email, user.id, setLists, setSelectedListId, setSelectedTaskId);
       hasFetched.current = true;
     }
   }, [user]);
@@ -68,7 +68,7 @@ export default function Home() {
   const createList = async (name: string, calledFromModal: boolean) =>{
     if(name.length > 0 && user)
     {
-      const success = await createListRequest(url + '/newList', user.email, user.id, name);
+      const success = await createListRequest(user.email, user.id, name);
 
       if(success){
         const newList: List = {
@@ -102,7 +102,7 @@ export default function Home() {
     if(name.length > 0 && selectedListId !== null && user)
     {
       const listName = lists[selectedListId].name;
-      const success = await createNewTaskRequest(url + '/newTask', user.email, user.id, listName, name);
+      const success = await createNewTaskRequest(user.email, user.id, listName, name);
 
       if(success)
       {
@@ -139,7 +139,7 @@ export default function Home() {
 
   const handleTaskDescInputFinished = () => {
     if(selectedListId !== null && selectedTaskId !== null && user){ 
-      updateTaskDescRequest(url + '/updateTaskDesc', user.email, user.id,  lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name, lists[selectedListId].tasks[selectedTaskId].taskDesc)
+      updateTaskDescRequest(user.email, user.id,  lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name, lists[selectedListId].tasks[selectedTaskId].taskDesc)
 
 
       lists[selectedListId].tasks[selectedTaskId].taskDesc;
@@ -150,7 +150,7 @@ export default function Home() {
     if(selectedListId !== null && selectedTaskId !== null && user){
       lists[selectedListId].tasks[selectedTaskId].dueDate = newDate;
 
-      updateTaskDateRequest(url + '/updateTaskDate', user.email, user.id,  lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name, newDate);
+      updateTaskDateRequest(user.email, user.id,  lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name, newDate);
     }
   }
 
@@ -165,7 +165,7 @@ export default function Home() {
         complete: !newTasks[index].complete
       };
 
-      const success = await updateTaskCompleteRequest(url + '/updateTaskComplete', user.email, user.id, lists[selectedListId].name, newTasks[index].name, newTasks[index].complete);
+      const success = await updateTaskCompleteRequest( user.email, user.id, lists[selectedListId].name, newTasks[index].name, newTasks[index].complete);
       
       newLists[selectedListId].tasks = newTasks;
 
@@ -182,7 +182,7 @@ const handleListContextMenu = (event: React.MouseEvent, index: number) => {
 const deleteList = async () => {
   setSelectedTaskId(null);
   if(selectedListId !== null && user) {
-    const success = await deleteListRequest(url + '/deleteList', user.email, user.id, lists[selectedListId].name);
+    const success = await deleteListRequest(user.email, user.id, lists[selectedListId].name);
     if(success) {
       const updatedLists = lists.filter((_, i) => i !== selectedListId)
       setLists(updatedLists);
@@ -206,7 +206,7 @@ const handleTaskContextMenu =  (event: React.MouseEvent, index: number) => {
 const deleteTask = async () => {
   if (selectedTaskId !== null && selectedListId !== null && user) {
     
-    const success = await deleteTaskRequest(url + '/deleteTask', user.email, user.id, lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name);
+    const success = await deleteTaskRequest(user.email, user.id, lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name);
 
     if(success){
       const updatedTasks = lists[selectedListId].tasks.filter((_, i) => i !== selectedTaskId);

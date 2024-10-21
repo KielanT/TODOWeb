@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { doesUserExistRequest, createUserRequest } from "../api/httpRequests"
 import "../modal.css";
 
-const url = 'http://192.168.0.50';
+
 
 export interface userDetails{
     id: string,
@@ -73,11 +73,10 @@ export default class LoginModal extends React.Component<LoginProps>
 
                 this.props.userDetailsSetter(newUser);
 
-                // TODO check if user exists, if not create user
                 const success = await doesUserExistRequest(url + '/doesUserExist', newUser.id)
                 if(!success)
                 {
-                    createUserRequest(url + '/createUser', newUser.email, newUser.id, newUser.firstName);
+                    createUserRequest(newUser.email, newUser.id, newUser.firstName);
                 }
             }
         }

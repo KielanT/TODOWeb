@@ -1,7 +1,8 @@
 import { Task, List }  from "../types/interfaces"
 
+const url = 'http://192.168.0.50';
+
 export const getListRequest = async ( 
-    url: string,
     email: string,
     id: string,
     setLists: React.Dispatch<React.SetStateAction<List[]>>,
@@ -10,7 +11,7 @@ export const getListRequest = async (
 ) => {
     const jsonPayload = { email, id, };
 
-    fetch(url, {
+    fetch(url + '/getLists', {
       method: 'POST',
       body: JSON.stringify(jsonPayload),
     })
@@ -55,10 +56,10 @@ export const getListRequest = async (
     });
   };
 
-  export const createListRequest = async (url: string, email: string, id: string, name: string ): Promise<boolean> => {
+  export const createListRequest = async (email: string, id: string, name: string ): Promise<boolean> => {
     const jsonPayload = { email, id, name };
   
-    return fetch(url, {
+    return fetch(url + '/newList', {
       method: 'POST',
       body: JSON.stringify(jsonPayload),
     })
@@ -75,10 +76,10 @@ export const getListRequest = async (
     });
   };
 
-  export const createNewTaskRequest = async (url: string, email: string, id: string, list: string, name: string) : Promise<boolean> =>{
+  export const createNewTaskRequest = async (email: string, id: string, list: string, name: string) : Promise<boolean> =>{
     const jsonPayload = { email, id, list, name };
 
-    return fetch(url, {
+    return fetch(url + '/newTask', {
         method: 'POST',
         body: JSON.stringify(jsonPayload),
     })
@@ -97,10 +98,10 @@ export const getListRequest = async (
     });
   }
 
-  export const deleteListRequest = async (url: string,  email: string, id: string, name: string) : Promise<boolean> => {
+  export const deleteListRequest = async (email: string, id: string, name: string) : Promise<boolean> => {
     const jsonPayload = { email, id, name };
 
-    return fetch(url, {
+    return fetch(url + '/deleteList', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json' 
@@ -123,10 +124,10 @@ export const getListRequest = async (
   }
 
   // deleteTask
-  export const deleteTaskRequest = async (url: string,  email: string, id: string, list: string, name: string) : Promise<boolean> => {
+  export const deleteTaskRequest = async (email: string, id: string, list: string, name: string) : Promise<boolean> => {
     const jsonPayload = { email, id, list, name };
 
-    return fetch(url, {
+    return fetch(url + '/deleteTask', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json' 
@@ -148,10 +149,10 @@ export const getListRequest = async (
     });
   }
 
-  export const updateTaskCompleteRequest = async (url: string,  email: string, id: string, list: string, name: string, complete: boolean) : Promise<boolean> => {
+  export const updateTaskCompleteRequest = async (email: string, id: string, list: string, name: string, complete: boolean) : Promise<boolean> => {
     const jsonPayload = { email, id, list, name, complete };
 
-    return fetch(url, {
+    return fetch(url + '/updateTaskComplete', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json' 
@@ -174,10 +175,10 @@ export const getListRequest = async (
   }
 
   // 
-  export const updateTaskDescRequest = async (url: string,  email: string, id: string, list: string, name: string, taskDesc: string) : Promise<boolean> => {
+  export const updateTaskDescRequest = async ( email: string, id: string, list: string, name: string, taskDesc: string) : Promise<boolean> => {
     const jsonPayload = { email, id, list, name, taskDesc };
 
-    return fetch(url, {
+    return fetch(url + '/updateTaskDesc', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json' 
@@ -200,11 +201,11 @@ export const getListRequest = async (
   }
 
   // updateTaskDate
-  export const updateTaskDateRequest = async (url: string,  email: string, id: string, list: string, name: string, date: Date) : Promise<boolean> => {
+  export const updateTaskDateRequest = async (email: string, id: string, list: string, name: string, date: Date) : Promise<boolean> => {
     const formattedDate = date.toLocaleDateString();
     
     const jsonPayload = { email, id, list, name, date: formattedDate };
-    return fetch(url, {
+    return fetch(url + '/updateTaskDate', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json' 
@@ -226,8 +227,8 @@ export const getListRequest = async (
     });
   }
 
-  export const doesUserExistRequest = async (url: string, id: string) : Promise<boolean> =>{
-    const requestUrl = `${url}?gID=${encodeURIComponent(id)}`;
+  export const doesUserExistRequest = async (id: string) : Promise<boolean> =>{
+    const requestUrl = `${url}/doesUserExist?gID=${encodeURIComponent(id)}`;
 
     return fetch(requestUrl, {
         method: 'GET',
@@ -245,10 +246,10 @@ export const getListRequest = async (
     });
   }
 
-  export const createUserRequest = async (url: string, email: string, id: string, name: string) : Promise<boolean> =>{
+  export const createUserRequest = async (email: string, id: string, name: string) : Promise<boolean> =>{
     const jsonPayload = { email, id, name };
 
-    return fetch(url, {
+    return fetch(url + '/createUser', {
         method: 'POST',
         body: JSON.stringify(jsonPayload),
     })
