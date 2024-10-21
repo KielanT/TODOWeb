@@ -39,11 +39,11 @@ export default class Modal extends React.Component<ModalProps, ModalState>
                         <input name= "name" value={inputName} onChange={this.handleInputChange} />
                     </div>
                     <div className="button-container">
-                        <button className="close-modal" onClick={()=>{
+                        <button className="modal-button" onClick={()=>{
                             nameModal(inputName, true);
                         }}>Add</button>
 
-                        <button className="close-modal" onClick={closeModal}>Cancel</button>
+                        <button className="modal-button" onClick={closeModal}>Cancel</button>
                     </div>
                 </div>
             </div>

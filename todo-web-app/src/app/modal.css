@@ -20,15 +20,16 @@
 
 }
 
-.close-modal {
+.modal-button {
     background-color: #151515;
     color: white;
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+    border: 1px solid #8a80805d;
 }
 
-.close-modal:hover {
+.modal-button:hover {
     background-color: #0f0f0f; 
 }
 

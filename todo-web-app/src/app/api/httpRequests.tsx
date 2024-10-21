@@ -35,7 +35,6 @@ export const getListRequest = async (
               dueDate: task.dueDate, // TODO get date
               complete: task.complete
             };  
-            console.log(task.taskName);
             newList.tasks.push(newTask);
 
           });
@@ -150,8 +149,7 @@ export const getListRequest = async (
     });
   }
 
-  // updateTaskComplete
-  export const updateTaskComplete = async (url: string,  email: string, id: string, list: string, name: string, complete: boolean) : Promise<boolean> => {
+  export const updateTaskCompleteRequest = async (url: string,  email: string, id: string, list: string, name: string, complete: boolean) : Promise<boolean> => {
     const jsonPayload = { email, id, list, name, complete };
 
     return fetch(url, {
@@ -176,9 +174,58 @@ export const getListRequest = async (
     });
   }
 
-  // updateTaskDesc
+  // 
+  export const updateTaskDescRequest = async (url: string,  email: string, id: string, list: string, name: string, taskDesc: string) : Promise<boolean> => {
+    const jsonPayload = { email, id, list, name, taskDesc };
+
+    return fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(jsonPayload),
+    })
+    .then(response => {
+        if(response.ok)
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false; 
+    });
+  }
 
   // updateTaskDate
+  export const updateTaskDateRequest = async (url: string,  email: string, id: string, list: string, name: string, date: Date) : Promise<boolean> => {
+    const formattedDate = date.toLocaleDateString();
+    
+    const jsonPayload = { email, id, list, name, date: formattedDate };
+    return fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(jsonPayload),
+    })
+    .then(response => {
+        if(response.ok)
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false; 
+    });
+  }
 
   // doesUserExist?
 

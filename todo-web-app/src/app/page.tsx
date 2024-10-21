@@ -5,15 +5,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import Modal from "./components/modals"
 import TaskModal from "./components/taskModal"
 import ContextMenu from "./components/ContextMenu"
+import LoginModal, {userDetails} from "./components/LoginModal"
 import Logo  from "../../../../Resources/ICON.png"
 import { Task, List }  from "./types/interfaces"
-import { getListRequest, createListRequest, createNewTaskRequest, deleteListRequest, deleteTaskRequest, updateTaskComplete } from "./api/httpRequests"
+import { getListRequest, createListRequest, createNewTaskRequest, deleteListRequest, deleteTaskRequest, updateTaskCompleteRequest, updateTaskDescRequest, updateTaskDateRequest } from "./api/httpRequests"
+import { jwtDecode } from 'jwt-decode';
 
-
+const url = 'http://192.168.0.50';
 
 export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
+  const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
+  const [user, setUserDetails] = useState<userDetails | null>(null);
   const [lists, setLists] = useState<List[]>([])
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
@@ -28,13 +32,33 @@ export default function Home() {
     visible: false,
   });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem('token');
+      if (!token && !isFirstTimeLogin) {
+        setIsFirstTimeLogin(true);
+      }
+      if(token){
+        const decoded = jwtDecode<any>(token); 
+        if (decoded.sub && decoded.email && decoded.given_name) {
+            const newUser: userDetails = {
+                id: decoded.sub,             
+                email: decoded.email,
+                firstName: decoded.given_name 
+            };
+            setUserDetails(newUser);
+        }
+      }
+    }
+  }, [isFirstTimeLogin]);
+
   const hasFetched = useRef(false); 
   useEffect(() => {
-    if(!hasFetched.current){
-      getListRequest( url + '/getLists', email, id, setLists, setSelectedListId, setSelectedTaskId);
+    if(!hasFetched.current && user !== null){
+      getListRequest( url + '/getLists', user.email, user.id, setLists, setSelectedListId, setSelectedTaskId);
       hasFetched.current = true;
     }
-  }, []);
+  }, [user]);
 
   const toggleModal = (type = '') =>{
     setModalType(type);
@@ -43,9 +67,9 @@ export default function Home() {
 
 
   const createList = async (name: string, calledFromModal: boolean) =>{
-    if(name.length > 0)
+    if(name.length > 0 && user)
     {
-      const success = await createListRequest(url + '/newList', email, id, name);
+      const success = await createListRequest(url + '/newList', user.email, user.id, name);
 
       if(success){
         const newList: List = {
@@ -76,10 +100,10 @@ export default function Home() {
   }
 
   const createTask = async (name: string) =>{
-    if(name.length > 0 && selectedListId !== null)
+    if(name.length > 0 && selectedListId !== null && user)
     {
       const listName = lists[selectedListId].name;
-      const success = await createNewTaskRequest(url + '/newTask', email, id, listName, name);
+      const success = await createNewTaskRequest(url + '/newTask', user.email, user.id, listName, name);
 
       if(success)
       {
@@ -114,14 +138,25 @@ export default function Home() {
     }
   }
 
+  const handleTaskDescInputFinished = () => {
+    if(selectedListId !== null && selectedTaskId !== null && user){ 
+      updateTaskDescRequest(url + '/updateTaskDesc', user.email, user.id,  lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name, lists[selectedListId].tasks[selectedTaskId].taskDesc)
+
+
+      lists[selectedListId].tasks[selectedTaskId].taskDesc;
+    }
+  }
+
   const handleTaskDueDateChange = (newDate: Date) => {
-    if(selectedListId !== null && selectedTaskId !== null){
+    if(selectedListId !== null && selectedTaskId !== null && user){
       lists[selectedListId].tasks[selectedTaskId].dueDate = newDate;
+
+      updateTaskDateRequest(url + '/updateTaskDate', user.email, user.id,  lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name, newDate);
     }
   }
 
   const toggleTaskComplete = async (index: number) => {
-    if(selectedListId !== null){
+    if(selectedListId !== null && user){
 
       const newLists = [...lists];
       const newTasks = [...newLists[selectedListId].tasks];
@@ -131,8 +166,8 @@ export default function Home() {
         complete: !newTasks[index].complete
       };
 
-      const success = await updateTaskComplete(url + '/updateTaskComplete', email, id, lists[selectedListId].name, newTasks[index].name, newTasks[index].complete);
-
+      const success = await updateTaskCompleteRequest(url + '/updateTaskComplete', user.email, user.id, lists[selectedListId].name, newTasks[index].name, newTasks[index].complete);
+      
       newLists[selectedListId].tasks = newTasks;
 
       setLists(newLists); 
@@ -147,8 +182,8 @@ const handleListContextMenu = (event: React.MouseEvent, index: number) => {
 
 const deleteList = async () => {
   setSelectedTaskId(null);
-  if(selectedListId !== null) {
-    const success = await deleteListRequest(url + '/deleteList', email, id, lists[selectedListId].name);
+  if(selectedListId !== null && user) {
+    const success = await deleteListRequest(url + '/deleteList', user.email, user.id, lists[selectedListId].name);
     if(success) {
       const updatedLists = lists.filter((_, i) => i !== selectedListId)
       setLists(updatedLists);
@@ -170,9 +205,9 @@ const handleTaskContextMenu =  (event: React.MouseEvent, index: number) => {
 };
 
 const deleteTask = async () => {
-  if (selectedTaskId !== null && selectedListId !== null) {
+  if (selectedTaskId !== null && selectedListId !== null && user) {
     
-    const success = await deleteTaskRequest(url + '/deleteTask', email, id, lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name);
+    const success = await deleteTaskRequest(url + '/deleteTask', user.email, user.id, lists[selectedListId].name, lists[selectedListId].tasks[selectedTaskId].name);
 
     if(success){
       const updatedTasks = lists[selectedListId].tasks.filter((_, i) => i !== selectedTaskId);
@@ -196,6 +231,7 @@ const closeTaskContextMenu = () =>
 {
   setTaskContextMenu({...taskContextMenu, visible: false});
 }
+
 
 
   return (  
@@ -234,11 +270,12 @@ const closeTaskContextMenu = () =>
           </div>
           ))}
           </div>
-          {selectedTaskId !== null && selectedListId !== null && (<TaskModal closeModal={() => setSelectedTaskId(null)} task={lists[selectedListId].tasks[selectedTaskId]} OnTaskDescUpdate={handleInputChange} OnTaskDateUpdate={handleTaskDueDateChange}/>)}
+          {selectedTaskId !== null && selectedListId !== null && (<TaskModal closeModal={() => setSelectedTaskId(null)} task={lists[selectedListId].tasks[selectedTaskId]} OnTaskDescUpdate={handleInputChange} onTaskDescUpdateFinish={handleTaskDescInputFinished} OnTaskDateUpdate={handleTaskDueDateChange}/>)}
         </div>
         {listContextMenu.visible && <ContextMenu position={{x: listContextMenu.x, y: listContextMenu.y}} OnDelete={deleteList} CloseMenu={closeListContextMenu}/>}
         {taskContextMenu.visible && <ContextMenu position={{x: taskContextMenu.x, y: taskContextMenu.y}} OnDelete={deleteTask} CloseMenu={closeTaskContextMenu}/>}
         {isModalOpen && <Modal closeModal={toggleModal} nameModal={modalType === 'list' ? createList : createTask} title={modalType === 'list' ? 'Create List' : 'Create Task'} />}
+        {isFirstTimeLogin && <LoginModal closeModal={() => setIsFirstTimeLogin(false)} userDetailsSetter={setUserDetails} />}
       </div>
     </main>
   );

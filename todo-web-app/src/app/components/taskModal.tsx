@@ -13,6 +13,7 @@ interface TaskProps
     closeModal: () => void;
     task: Task;
     OnTaskDescUpdate: (newDesc: string) => void;
+    onTaskDescUpdateFinish: () => void;
     OnTaskDateUpdate: (newDate: Date) => void;
 }
 
@@ -22,7 +23,7 @@ interface TaskState{
 
 }
 
-export default class Modal extends React.Component<TaskProps, TaskState>
+export default class TaskModal extends React.Component<TaskProps, TaskState>
 {
     constructor(props: TaskProps)
     {
@@ -63,7 +64,7 @@ export default class Modal extends React.Component<TaskProps, TaskState>
                 <button className='close-button' onClick={this.props.closeModal}>X</button>
                 <h1>{task.name}</h1>
                 <h2>Description</h2>
-                <textarea className="task-desc-input" value={this.state.taskDesc} onChange={this.handleInputChange}/>
+                <textarea className="task-desc-input" value={this.state.taskDesc} onChange={this.handleInputChange} onBlur={this.props.onTaskDescUpdateFinish}/>
                 <DatePicker selected={this.state.dueDate} onChange={this.handleDateChange} dateFormat={"dd/MM/yyyy"}/>
             </div>
         );
