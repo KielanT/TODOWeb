@@ -1,4 +1,4 @@
-# TODO List Project: Desktop front end
+# TODO List Project: Web front end
 - Server: https://github.com/KielanT/TODOServer
 - Desktop: https://github.com/KielanT/TODODesktop
 
