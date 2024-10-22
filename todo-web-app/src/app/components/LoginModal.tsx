@@ -73,7 +73,7 @@ export default class LoginModal extends React.Component<LoginProps>
 
                 this.props.userDetailsSetter(newUser);
 
-                const success = await doesUserExistRequest(url + '/doesUserExist', newUser.id)
+                const success = await doesUserExistRequest(newUser.id)
                 if(!success)
                 {
                     createUserRequest(newUser.email, newUser.id, newUser.firstName);
