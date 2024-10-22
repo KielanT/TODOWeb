@@ -1,7 +1,9 @@
 # TODO List Project: Desktop front end
 - Server: https://github.com/KielanT/TODOServer
 - Desktop: https://github.com/KielanT/TODODesktop
-- 
+
+![image](https://github.com/user-attachments/assets/9547ef42-573e-4c32-b6ae-225238ba83eb)
+
 ## Description
 TODO Web is a web app built using next js that allows users to create and manage to-do lists and tasks. These tasks are stored on a C++ server with a MySQL database, which can be found in the link above. The web app communicates with the server via HTTP requests to retrieve, update, and manage the user's to-do lists and tasks.
 
